@@ -31,7 +31,7 @@ Clockwork Scheduler's real-time administrative interface provides unified visibi
 Unlike legacy Quartz architectures, Clockwork utilizes **JobRunr 7.x** for distributed worker coordination across master-worker clusters, backed by **PostgreSQL 15** for persistent storage, **Flyway** for database migrations, and **Spring State Machine** for resilient multi-stage financial transactions.
 
 ### 🌐 Interactive Web Showcase
-Explore the live interactive simulator, cron expression calculator, and Kenya enterprise workflow blueprints on our **[GitHub Pages Showcase Site](https://crnjihia.github.io/clockwork-scheduler/)**.
+Explore the live interactive simulator, cron expression calculator, and Kenya enterprise workflow blueprints on my **[GitHub Pages Showcase Site](https://crnjihia.github.io/clockwork-scheduler/)**.
 
 ---
 
