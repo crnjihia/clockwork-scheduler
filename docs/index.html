@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clockwork Scheduler — Distributed Job Scheduling for Kenyan Businesses</title>
+  <meta name="description" content="High-throughput distributed job scheduling platform built with Spring Boot 3.x and JobRunr 7.x, powering automated M-Pesa reconciliation, bulk SMS, PDF reports, and multi-step statement pipelines.">
+  <meta name="keywords" content="JobRunr, Spring Boot, Scheduler, M-Pesa Reconciliation, Kenyan Enterprise, Distributed Scheduling, Dead Letter Queue">
+  
+  <!-- OpenGraph Metadata -->
+  <meta property="og:title" content="Clockwork Scheduler — Distributed Job Scheduling Platform">
+  <meta property="og:description" content="Automate Kenyan back-office operations: M-Pesa reconciliation, bulk SMS, and multi-step workflows with zero job loss.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="images/dashboard-overview.jpg">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="#" class="brand" id="brandLogo">
+        <div class="brand-icon">⚙</div>
+        <span>Clockwork</span> Scheduler
+      </a>
+      <ul class="nav-links">
+        <li><a href="#showcase">Dashboard</a></li>
+        <li><a href="#usecases">Kenya Workflows</a></li>
+        <li><a href="#simulator">Live Simulator</a></li>
+        <li><a href="#cron">Cron Calculator</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#api">REST API</a></li>
+        <li>
+          <a href="https://github.com/crnjihia/clockwork-scheduler" target="_blank" rel="noopener" class="btn-nav-github" id="navGithubLink">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+            GitHub
+          </a>
+        </li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero" id="home">
+    <div class="badge-pill">
+      <span class="badge-dot"></span>
+      Engineered for East African Back-Office Workflows
+    </div>
+    <h1>
+      Automate Kenyan Operations with <br>
+      <span class="gradient-text">Clockwork Reliability</span>
+    </h1>
+    <p>
+      A distributed, high-throughput job scheduling engine powered by Spring Boot 3 and JobRunr 7.
+      Purpose-built for automated M-Pesa reconciliations, scheduled bulk SMS dispatches, tax reports, and multi-step statement pipelines with zero job loss.
+    </p>
+    <div class="hero-actions">
+      <a href="#simulator" class="btn-primary" id="btnHeroTry">
+        ⚡ Test Live Interactive Simulator
+      </a>
+      <a href="https://github.com/crnjihia/clockwork-scheduler/releases" target="_blank" rel="noopener" class="btn-secondary" id="btnHeroRelease">
+        📦 Download v1.0.0 Release
+      </a>
+    </div>
+
+    <!-- Live Metrics Strip -->
+    <div class="stats-strip">
+      <div class="stat-box glass-panel">
+        <div class="stat-number" id="statRecon">KES 48,512,000</div>
+        <div class="stat-label">Nightly M-Pesa Reconciled</div>
+      </div>
+      <div class="stat-box glass-panel cyan">
+        <div class="stat-number" id="statJobs">248,924</div>
+        <div class="stat-label">Jobs Executed</div>
+      </div>
+      <div class="stat-box glass-panel emerald">
+        <div class="stat-number" id="statWorkers">8 Workers</div>
+        <div class="stat-label">Active Worker Nodes</div>
+      </div>
+      <div class="stat-box glass-panel purple">
+        <div class="stat-number" id="statRate">100%</div>
+        <div class="stat-label">Delivery SLA Guarantee</div>
+      </div>
+    </div>
+
+    <!-- Visual Dashboard Showcase -->
+    <div class="showcase-container glass-panel" id="showcase">
+      <div class="showcase-bar">
+        <div class="window-dots">
+          <div class="dot red"></div>
+          <div class="dot yellow"></div>
+          <div class="dot green"></div>
+        </div>
+        <div class="showcase-tab-pills">
+          <button class="tab-pill active" data-tab="overview">Dashboard Overview</button>
+          <button class="tab-pill" data-tab="workflows">Workflow Pipeline</button>
+          <button class="tab-pill" data-tab="dlq">DLQ & Re-drive</button>
+        </div>
+      </div>
+      <div class="showcase-image-wrapper">
+        <img src="images/dashboard-overview.jpg" alt="Clockwork Scheduler Dashboard Overview" id="showcaseImage" class="showcase-img">
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Workflow Simulator Section -->
+  <section class="section" id="simulator">
+    <div class="section-header">
+      <h2>Interactive Workflow Simulator</h2>
+      <p>Simulate how Spring State Machine orchestrates linear progression with automatic rollback, DLQ intervention, and Slack notifications.</p>
+    </div>
+
+    <div class="sim-grid">
+      <!-- Steps Card -->
+      <div class="sim-card glass-panel">
+        <h3>Statement Generation Pipeline</h3>
+        <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 0.35rem;">
+          Customer CUST-KE-254 statement dispatch pipeline:
+        </p>
+
+        <div class="sim-steps">
+          <div class="sim-step" id="step1">
+            <div class="step-info">
+              <div class="step-badge">1</div>
+              <div>
+                <strong>Generate PDF Statement</strong>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">OpenPDF • Financial Summary</div>
+              </div>
+            </div>
+            <span class="step-status-tag" id="stepTag1">PENDING</span>
+          </div>
+
+          <div class="sim-step" id="step2">
+            <div class="step-info">
+              <div class="step-badge">2</div>
+              <div>
+                <strong>Email Statement to Client</strong>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">SMTP • Encrypted PDF attachment</div>
+              </div>
+            </div>
+            <span class="step-status-tag" id="stepTag2">PENDING</span>
+          </div>
+
+          <div class="sim-step" id="step3">
+            <div class="step-info">
+              <div class="step-badge">3</div>
+              <div>
+                <strong>Archive to Cold Storage</strong>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">MinIO / S3 • 7-year audit retention</div>
+              </div>
+            </div>
+            <span class="step-status-tag" id="stepTag3">PENDING</span>
+          </div>
+
+          <div class="sim-step" id="step4">
+            <div class="step-info">
+              <div class="step-badge">4</div>
+              <div>
+                <strong>Notify Client via SMS</strong>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Safaricom Gateway • +254722...</div>
+              </div>
+            </div>
+            <span class="step-status-tag" id="stepTag4">PENDING</span>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+          <button class="btn-primary" id="btnRunWorkflow">▶ Execute Workflow</button>
+          <button class="btn-secondary" id="btnSimulateFailure">⚡ Simulate Failure at Step 2</button>
+        </div>
+      </div>
+
+      <!-- Real-Time Terminal Output -->
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <span>CLOCKWORK KERNEL EXECUTION LOG</span>
+          <span>SSE: CONNECTED</span>
+        </div>
+        <div class="terminal-body" id="simTerminal">
+          <div class="log-line">
+            <span class="log-time">[System]</span> <span class="log-info">Clockwork Scheduler 1.0.0 initialized on Nairobi Africa/Nairobi EAT</span>
+          </div>
+          <div class="log-line">
+            <span class="log-time">[Storage]</span> <span class="log-info">JobRunr StorageProvider: PostgreSQL 15 connected (pool size: 10)</span>
+          </div>
+          <div class="log-line">
+            <span class="log-time">[Ready]</span> <span class="log-success">Ready for interactive execution triggers.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cron Expression Evaluator -->
+  <section class="section" id="cron">
+    <div class="section-header">
+      <h2>Kenya Business Cron Calculator</h2>
+      <p>Inspect execution schedules in <code>Africa/Nairobi (EAT, UTC+3)</code> formatted for JobRunr recurring schedules.</p>
+    </div>
+
+    <div class="cron-box glass-panel">
+      <label style="font-weight: 600; font-size: 0.95rem;">Select Preset Schedule or Input Custom Cron:</label>
+      <div class="cron-input-group">
+        <select class="cron-select" id="cronPresets">
+          <option value="mpesa">M-Pesa Nightly Reconciliation (3:00 AM Nairobi EAT)</option>
+          <option value="sms">Morning Bulk SMS Dispatch (9:00 AM Weekdays EAT)</option>
+          <option value="backup">PostgreSQL Database Snapshot (2:00 AM Daily EAT)</option>
+          <option value="hourly">Hourly Transaction Health Check</option>
+        </select>
+        <input type="text" class="cron-input" id="cronExpressionInput" value="0 3 * * *">
+      </div>
+
+      <div style="margin-top: 1.5rem;">
+        <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Upcoming Scheduled Triggers:</span>
+        <ul class="next-runs-list" id="cronNextRuns">
+          <!-- Filled by app.js -->
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Kenyan Business Use Cases -->
+  <section class="section" id="usecases">
+    <div class="section-header">
+      <h2>Engineered for Kenyan Workflows</h2>
+      <p>Built to handle the specific operational and regulatory needs of financial institutions and enterprises in East Africa.</p>
+    </div>
+
+    <div class="cards-grid">
+      <div class="feature-card glass-panel">
+        <div class="card-icon">🇰🇪</div>
+        <h3>M-Pesa Nightly Reconciliation</h3>
+        <p>Parses Safaricom C2B/B2C Paybill settlement statement CSVs, matches internal ledger balances, calculates variances, and logs anomalies for accounting review.</p>
+        <div class="feature-tags">
+          <span class="tag">0 3 * * *</span>
+          <span class="tag">C2B Paybill</span>
+          <span class="tag">Variance Alerts</span>
+        </div>
+      </div>
+
+      <div class="feature-card glass-panel">
+        <div class="card-icon">📱</div>
+        <h3>Chunked Bulk SMS Dispatches</h3>
+        <p>Dispatches marketing and billing SMS in rate-limited batches (50 ms delays) to respect telco throttling, buffering failed recipients for automatic exponential retries.</p>
+        <div class="feature-tags">
+          <span class="tag">50ms Throttle</span>
+          <span class="tag">Safaricom / Airtel</span>
+          <span class="tag">Retry Buffer</span>
+        </div>
+      </div>
+
+      <div class="feature-card glass-panel">
+        <div class="card-icon">📄</div>
+        <h3>On-Demand PDF Reports</h3>
+        <p>Generates high-resolution financial statements, tax audit certificates, and monthly summaries using OpenPDF, archiving files directly to S3/MinIO cold storage.</p>
+        <div class="feature-tags">
+          <span class="tag">OpenPDF</span>
+          <span class="tag">MinIO S3</span>
+          <span class="tag">Encrypted</span>
+        </div>
+      </div>
+
+      <div class="feature-card glass-panel">
+        <div class="card-icon">🗄️</div>
+        <h3>Nightly Database Snapshots</h3>
+        <p>Executes automated PostgreSQL dumps with gzip compression, streams to secure off-site buckets, and enforces a strict 30-day retention pruning policy.</p>
+        <div class="feature-tags">
+          <span class="tag">pg_dump</span>
+          <span class="tag">Gzip</span>
+          <span class="tag">30-Day Pruning</span>
+        </div>
+      </div>
+
+      <div class="feature-card glass-panel">
+        <div class="card-icon">🛡️</div>
+        <h3>Zero-Loss Dead Letter Queue</h3>
+        <p>Custom <code>ApplyStateFilter</code> catches terminal job failures, rerouting them to the DLQ table. Triggers Slack/Webhook alerts when failures exceed 10/hr.</p>
+        <div class="feature-tags">
+          <span class="tag">DLQ Table</span>
+          <span class="tag">Slack Alerting</span>
+          <span class="tag">Single-Click Re-drive</span>
+        </div>
+      </div>
+
+      <div class="feature-card glass-panel">
+        <div class="card-icon">🔄</div>
+        <h3>Spring State Machine Workflows</h3>
+        <p>Linear multi-step execution with transactional integrity. Failure at any step pauses the workflow without corrupting preceding steps, supporting single-step retries.</p>
+        <div class="feature-tags">
+          <span class="tag">Spring State Machine 3.2</span>
+          <span class="tag">Step Isolation</span>
+          <span class="tag">Safe Retry</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture -->
+  <section class="section" id="architecture">
+    <div class="section-header">
+      <h2>Architecture & Tech Stack</h2>
+      <p>Clean, enterprise-grade architecture adhering to modern Java standards without legacy Quartz dependencies.</p>
+    </div>
+
+    <div class="tech-strip">
+      <div class="tech-badge">☕ Java 21 / 17</div>
+      <div class="tech-badge">🍃 Spring Boot 3.2.5</div>
+      <div class="tech-badge">⚙️ JobRunr 7.2.2</div>
+      <div class="tech-badge">🐘 PostgreSQL 15</div>
+      <div class="tech-badge">⚡ Redis 7</div>
+      <div class="tech-badge">🪣 MinIO / AWS S3</div>
+      <div class="tech-badge">📊 Prometheus & Grafana</div>
+      <div class="tech-badge">🐳 Docker Compose</div>
+    </div>
+  </section>
+
+  <!-- REST API Section -->
+  <section class="section" id="api">
+    <div class="section-header">
+      <h2>REST API Reference</h2>
+      <p>Trigger jobs, inspect execution statuses, and orchestrate workflows programmatically.</p>
+    </div>
+
+    <div class="sim-card glass-panel" style="max-width: 900px; margin: 0 auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <strong>Trigger Immediate Job Run (POST /api/v1/jobs/{id}/run)</strong>
+        <button class="tab-pill btn-copy-code" data-target="codeCurlJob">Copy cURL</button>
+      </div>
+      <div class="terminal-box" style="height: auto;">
+        <pre class="terminal-body" id="codeCurlJob" style="margin: 0; padding: 1rem; color: var(--accent-amber); white-space: pre-wrap;">
+curl -X POST http://localhost:8080/api/v1/jobs/efff42ef-d8b4-47f1-8087-0f9bafe81c71/run \
+  -H "Authorization: Basic YWRtaW46YWRtaW4xMjM=" \
+  -H "Content-Type: application/json"
+        </pre>
+      </div>
+
+      <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <strong>Create & Execute Multi-Step Workflow (POST /api/v1/workflows)</strong>
+        <button class="tab-pill btn-copy-code" data-target="codeCurlWf">Copy cURL</button>
+      </div>
+      <div class="terminal-box" style="height: auto;">
+        <pre class="terminal-body" id="codeCurlWf" style="margin: 0; padding: 1rem; color: var(--accent-cyan); white-space: pre-wrap;">
+curl -X POST http://localhost:8080/api/v1/workflows \
+  -H "Authorization: Basic YWRtaW46YWRtaW4xMjM=" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customerId": "CUST-KE-254",
+    "email": "finance@company.ke",
+    "phone": "+254722000000"
+  }'
+        </pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-links">
+      <a href="https://github.com/crnjihia/clockwork-scheduler" target="_blank" rel="noopener">GitHub Repository</a>
+      <a href="https://github.com/crnjihia/clockwork-scheduler/releases" target="_blank" rel="noopener">Releases</a>
+      <a href="cron-expressions.md">Cron Docs</a>
+      <a href="postman/Clockwork_Scheduler.postman_collection.json" download>Postman Collection</a>
+    </div>
+    <p>© 2026 Clockwork Scheduler. Distributed scheduling engineered for Kenyan enterprises. Released under MIT License.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
