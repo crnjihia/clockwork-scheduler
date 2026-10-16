@@ -2,6 +2,30 @@
 
 All notable changes to the **Clockwork Scheduler** platform will be documented in this file.
 
+## [v1.0.2] - 2026-10-16
+
+### Enhanced Documentation, Live Screenshot & Standalone Demo Engine
+
+#### 🌟 What's New
+- **Live Mission Control Screenshot**: Embedded authentic dashboard capture showing real-time execution telemetry, live SSE status, active background workers, and DLQ diagnostics.
+- **Standalone Demo Profile (`--spring.profiles.active=demo`)**: Allows anyone to launch the platform locally without Docker or external PostgreSQL, auto-seeding M-Pesa reconciliations, bulk SMS campaigns, and statement workflows.
+- **Enhanced README**: Added system architecture diagrams, state progression sequences, observability mappings, and REST API examples.
+- **MIT License**: Included official open-source license.
+
+---
+
+## [v1.0.1] - 2026-10-16
+
+### GitHub Pages Web Showcase & Interactive Simulator
+
+#### 🚀 Features
+- **Interactive Web Showcase**: Hosted on GitHub Pages with dark glassmorphic styling, live stats counter, and responsive layouts.
+- **Live Workflow State Machine Simulator**: Client-side interactive runner simulating linear progression and failure injection into DLQ.
+- **Kenya Business Cron Calculator**: Interactive tool computing next run timestamps for M-Pesa recon (3:00 AM EAT), bulk SMS, and database backups.
+- **Automated CI/CD**: Added GitHub Actions deployment workflow for GitHub Pages (`.github/workflows/pages.yml`).
+
+---
+
 ## [v1.0.0] - 2026-10-16
 
 ### Initial Production Release - Distributed Job Scheduling Platform
