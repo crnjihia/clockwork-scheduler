@@ -28,7 +28,7 @@ public class AdminDashboardController {
         this.workflowRepository = workflowRepository;
     }
 
-    @GetMapping
+    @GetMapping({"", "/", "/dashboard"})
     public String dashboard(Model model) {
         var stats = jobExecutionService.getDashboardStats();
         model.addAttribute("stats", stats);
