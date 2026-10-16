@@ -1,0 +1,243 @@
+{
+  "info": {
+    "name": "Clockwork Scheduler REST API",
+    "_postman_id": "c10cb001-a1b2-4c3d-8e4f-567890abcdef",
+    "description": "Comprehensive Postman collection for the Clockwork Scheduler distributed job orchestration platform.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Scheduled Jobs",
+      "item": [
+        {
+          "name": "List All Scheduled Jobs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/jobs", "host": ["{{baseUrl}}"], "path": ["api", "jobs"] }
+          }
+        },
+        {
+          "name": "Get Scheduled Job by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/jobs/{{jobId}}", "host": ["{{baseUrl}}"], "path": ["api", "jobs", "{{jobId}}"] }
+          }
+        },
+        {
+          "name": "Schedule Recurring Job (M-Pesa Recon)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nightly Daraja Settlement Run\",\n  \"cronExpression\": \"0 0 2 * * ?\",\n  \"jobClass\": \"MpesaReconciliationJob\",\n  \"payload\": \"{\\\"paybillNumber\\\": \\\"654321\\\", \\\"accountReference\\\": \\\"KENYA-SETTLEMENT\\\", \\\"discrepancyThreshold\\\": 5000.0, \\\"notifyEmail\\\": \\\"settlements@clockwork.co.ke\\\"}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/jobs/schedule", "host": ["{{baseUrl}}"], "path": ["api", "jobs", "schedule"] }
+          }
+        },
+        {
+          "name": "Trigger Scheduled Job Now",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/jobs/{{jobId}}/run-now", "host": ["{{baseUrl}}"], "path": ["api", "jobs", "{{jobId}}", "run-now"] }
+          }
+        },
+        {
+          "name": "Pause Scheduled Job",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/jobs/{{jobId}}/pause", "host": ["{{baseUrl}}"], "path": ["api", "jobs", "{{jobId}}", "pause"] }
+          }
+        },
+        {
+          "name": "Resume Scheduled Job",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/jobs/{{jobId}}/resume", "host": ["{{baseUrl}}"], "path": ["api", "jobs", "{{jobId}}", "resume"] }
+          }
+        },
+        {
+          "name": "Update Cron Expression",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cronExpression\": \"0 */30 * * * ?\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/jobs/{{jobId}}/cron", "host": ["{{baseUrl}}"], "path": ["api", "jobs", "{{jobId}}", "cron"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "One-Off Executions",
+      "item": [
+        {
+          "name": "Enqueue One-Off Bulk SMS Job",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobClass\": \"BulkSmsJob\",\n  \"payload\": \"{\\\"campaignName\\\": \\\"Flash Sale Alert\\\", \\\"phoneNumbers\\\": [\\\"+254712345001\\\", \\\"+254722345002\\\"], \\\"messageTemplate\\\": \\\"Jambo! Exclusive discount code inside.\\\", \\\"batchSize\\\": 100, \\\"delayBetweenBatchesMs\\\": 500}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/jobs/run", "host": ["{{baseUrl}}"], "path": ["api", "jobs", "run"] }
+          }
+        },
+        {
+          "name": "Enqueue One-Off PDF Generation Job",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobClass\": \"PdfReportJob\",\n  \"payload\": \"{\\\"reportType\\\": \\\"MONTHLY_STATEMENT\\\", \\\"organizationName\\\": \\\"Nairobi Safari Ventures\\\", \\\"recipientEmail\\\": \\\"finance@safari.co.ke\\\", \\\"targetS3Bucket\\\": \\\"clockwork-reports\\\"}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/jobs/run", "host": ["{{baseUrl}}"], "path": ["api", "jobs", "run"] }
+          }
+        },
+        {
+          "name": "Enqueue DB Snapshot Job",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobClass\": \"DatabaseSnapshotJob\",\n  \"payload\": \"{\\\"databaseName\\\": \\\"clockwork_db\\\", \\\"retentionDays\\\": 30, \\\"targetS3Bucket\\\": \\\"clockwork-backups\\\", \\\"compression\\\": \\\"gzip\\\"}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/jobs/run", "host": ["{{baseUrl}}"], "path": ["api", "jobs", "run"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Execution History & DLQ",
+      "item": [
+        {
+          "name": "Search Executions (Paginated + Filters)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/executions?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "executions"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" },
+                { "key": "status", "value": "SUCCEEDED", "disabled": true },
+                { "key": "jobId", "value": "{{jobId}}", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Execution Details by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/executions/{{executionId}}", "host": ["{{baseUrl}}"], "path": ["api", "executions", "{{executionId}}"] }
+          }
+        },
+        {
+          "name": "Requeue Dead-Letter Job",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/executions/{{executionId}}/requeue", "host": ["{{baseUrl}}"], "path": ["api", "executions", "{{executionId}}", "requeue"] }
+          }
+        },
+        {
+          "name": "Get Engine Aggregated Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/executions/stats", "host": ["{{baseUrl}}"], "path": ["api", "executions", "stats"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "State Machine Workflows",
+      "item": [
+        {
+          "name": "Create Statement Workflow",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Enterprise Nairobi Client Statement Run\",\n  \"customerId\": \"CUST-KE-9901\",\n  \"email\": \"billing@enterprise.co.ke\",\n  \"phone\": \"+254712345678\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/workflows", "host": ["{{baseUrl}}"], "path": ["api", "workflows"] }
+          }
+        },
+        {
+          "name": "List All Workflows",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/workflows", "host": ["{{baseUrl}}"], "path": ["api", "workflows"] }
+          }
+        },
+        {
+          "name": "Get Workflow by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/workflows/{{workflowId}}", "host": ["{{baseUrl}}"], "path": ["api", "workflows", "{{workflowId}}"] }
+          }
+        },
+        {
+          "name": "Start Workflow Execution",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/workflows/{{workflowId}}/start", "host": ["{{baseUrl}}"], "path": ["api", "workflows", "{{workflowId}}", "start"] }
+          }
+        },
+        {
+          "name": "Retry Failed Workflow",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/workflows/{{workflowId}}/retry", "host": ["{{baseUrl}}"], "path": ["api", "workflows", "{{workflowId}}", "retry"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Observability & Actuator",
+      "item": [
+        {
+          "name": "Prometheus Metrics Scrape",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/actuator/prometheus", "host": ["{{baseUrl}}"], "path": ["actuator", "prometheus"] }
+          }
+        },
+        {
+          "name": "Actuator Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/actuator/health", "host": ["{{baseUrl}}"], "path": ["actuator", "health"] }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "jobId", "value": "11111111-1111-1111-1111-111111111111" },
+    { "key": "executionId", "value": "22222222-2222-2222-2222-222222222222" },
+    { "key": "workflowId", "value": "33333333-3333-3333-3333-333333333333" }
+  ]
+}

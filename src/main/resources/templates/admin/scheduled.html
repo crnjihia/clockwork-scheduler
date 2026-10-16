@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head('Scheduled Jobs')}"></head>
+<body>
+
+<nav th:replace="~{admin/layout :: nav}"></nav>
+
+<div class="container-fluid px-4 py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Scheduled Jobs</h2>
+            <p class="text-muted small mb-0">Recurring and automated cron schedules synchronized with JobRunr background workers.</p>
+        </div>
+        <button class="btn btn-cw-primary" data-bs-toggle="modal" data-bs-target="#newJobModal">
+            <i class="bi bi-plus-lg me-1"></i> Add Recurring Schedule
+        </button>
+    </div>
+
+    <!-- Jobs Table -->
+    <div class="card-cw p-4">
+        <div class="table-responsive">
+            <table class="table-cw">
+                <thead>
+                    <tr>
+                        <th>Job Name</th>
+                        <th>Job Type</th>
+                        <th>Handler Class</th>
+                        <th>Cron Expression</th>
+                        <th>Status</th>
+                        <th>Last Run</th>
+                        <th>Next Run</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(jobs)}">
+                        <td colspan="8" class="text-center text-muted py-4">
+                            No scheduled jobs configured.
+                        </td>
+                    </tr>
+                    <tr th:each="job : ${jobs}">
+                        <td>
+                            <strong th:text="${job.name}">Nightly M-Pesa Recon</strong>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary" th:text="${job.type}">RECURRING</span>
+                        </td>
+                        <td>
+                            <code class="code-snippet" th:text="${job.jobClass}">MpesaReconciliationJob</code>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <code class="code-snippet" th:text="${job.cronExpression}">0 0 2 * * ?</code>
+                                <button class="btn btn-sm btn-link p-0 text-muted"
+                                        data-bs-toggle="modal"
+                                        th:data-bs-target="'#editCronModal-' + ${job.id}"
+                                        title="Edit Cron">
+                                    <i class="bi bi-pencil-square text-info"></i>
+                                </button>
+                            </div>
+                        </td>
+                        <td>
+                            <span th:if="${job.status.name() == 'ACTIVE'}" class="badge-status badge-active">
+                                <i class="bi bi-check-circle-fill"></i> ACTIVE
+                            </span>
+                            <span th:if="${job.status.name() == 'PAUSED'}" class="badge-status badge-paused">
+                                <i class="bi bi-pause-circle-fill"></i> PAUSED
+                            </span>
+                            <span th:if="${job.status.name() == 'DISABLED'}" class="badge-status badge-failed">
+                                <i class="bi bi-slash-circle"></i> DISABLED
+                            </span>
+                        </td>
+                        <td class="text-muted small" th:text="${job.lastRunAt != null ? #temporals.format(job.lastRunAt, 'yyyy-MM-dd HH:mm:ss') : 'Never'}">Last Run</td>
+                        <td class="text-muted small" th:text="${job.nextRunAt != null ? #temporals.format(job.nextRunAt, 'yyyy-MM-dd HH:mm:ss') : '-'}">Next Run</td>
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-1">
+                                <!-- Run Now -->
+                                <form th:action="@{'/admin/scheduled/' + ${job.id} + '/run-now'}" method="post">
+                                    <button type="submit" class="btn btn-sm btn-cw-primary" title="Trigger immediate execution">
+                                        <i class="bi bi-play-fill"></i> Run Now
+                                    </button>
+                                </form>
+
+                                <!-- Pause / Resume -->
+                                <form th:if="${job.status.name() == 'ACTIVE'}" th:action="@{'/admin/scheduled/' + ${job.id} + '/pause'}" method="post">
+                                    <button type="submit" class="btn btn-sm btn-cw-outline" title="Pause recurring schedule">
+                                        <i class="bi bi-pause-fill"></i> Pause
+                                    </button>
+                                </form>
+                                <form th:if="${job.status.name() == 'PAUSED'}" th:action="@{'/admin/scheduled/' + ${job.id} + '/resume'}" method="post">
+                                    <button type="submit" class="btn btn-sm btn-cw-outline" title="Resume recurring schedule">
+                                        <i class="bi bi-play-circle"></i> Resume
+                                    </button>
+                                </form>
+
+                                <!-- Disable -->
+                                <form th:if="${job.status.name() != 'DISABLED'}" th:action="@{'/admin/scheduled/' + ${job.id} + '/disable'}" method="post">
+                                    <button type="submit" class="btn btn-sm btn-cw-outline text-danger" title="Disable schedule">
+                                        <i class="bi bi-slash-circle"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+
+                        <!-- Edit Cron Modal per job -->
+                        <div class="modal fade" th:id="'editCronModal-' + ${job.id}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form th:action="@{'/admin/scheduled/' + ${job.id} + '/cron'}" method="post">
+                                        <div class="modal-header border-secondary border-opacity-25">
+                                            <h5 class="modal-title">Edit Cron Schedule</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p class="text-muted small">Update the Quartz/Linux cron expression for <strong><span th:text="${job.name}"></span></strong>. This will unregister and re-register the recurring job in JobRunr immediately.</p>
+                                            <div class="mb-3">
+                                                <label class="form-label small text-muted">Cron Expression</label>
+                                                <input type="text" name="cronExpression" class="form-control" th:value="${job.cronExpression}" required>
+                                                <div class="form-text text-muted small">Example: <code>0 0 2 * * ?</code> (2:00 AM daily) or <code>0 */15 * * * ?</code> (every 15 min)</div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer border-secondary border-opacity-25">
+                                            <button type="button" class="btn btn-cw-outline" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-cw-primary">Save &amp; Re-register</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- New Scheduled Job Modal -->
+<div class="modal fade" id="newJobModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form th:action="@{/admin/scheduled/create}" method="post">
+                <div class="modal-header border-secondary border-opacity-25">
+                    <h5 class="modal-title">Schedule New Automation Job</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small text-muted">Job Name</label>
+                            <input type="text" name="name" class="form-control" placeholder="e.g., Nightly Daraja Settlement" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small text-muted">Job Handler Class</label>
+                            <select name="jobClass" class="form-select" required>
+                                <option value="MpesaReconciliationJob">MpesaReconciliationJob (Daraja C2B/B2C)</option>
+                                <option value="BulkSmsJob">BulkSmsJob (Batch Telco Dispatch)</option>
+                                <option value="PdfReportJob">PdfReportJob (Financial PDF Generation)</option>
+                                <option value="DatabaseSnapshotJob">DatabaseSnapshotJob (Postgres pg_dump S3 Backup)</option>
+                                <option value="StatementWorkflowJob">StatementWorkflowJob (Multi-step State Machine)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small text-muted">Cron Expression</label>
+                            <input type="text" name="cronExpression" class="form-control" placeholder="0 0 2 * * ?" required>
+                            <div class="form-text text-muted small">Standard Quartz/Linux 6-field expression (seconds minutes hours day-of-month month day-of-week).</div>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small text-muted">Payload Configuration (JSON)</label>
+                            <textarea name="payload" rows="4" class="form-control font-monospace" placeholder='{"paybillNumber": "654321", "accountReference": "KENYA-SETTLEMENT"}'></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary border-opacity-25">
+                    <button type="button" class="btn btn-cw-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-cw-primary">Schedule Job</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{admin/layout :: footer}"></footer>
+</body>
+</html>

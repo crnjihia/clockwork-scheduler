@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head('Overview')}"></head>
+<body>
+
+<nav th:replace="~{admin/layout :: nav}"></nav>
+
+<div class="container-fluid px-4 py-4">
+    <!-- Breadcrumb & Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Mission Control</h2>
+            <p class="text-muted small mb-0">High-throughput distributed workflow orchestration &amp; Kenyan back-office automation.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a th:href="@{/admin/scheduled}" class="btn btn-cw-primary">
+                <i class="bi bi-plus-lg me-1"></i> New Scheduled Job
+            </a>
+            <a th:href="@{/admin/workflows}" class="btn btn-cw-outline">
+                <i class="bi bi-diagram-3 me-1"></i> Launch Workflow
+            </a>
+        </div>
+    </div>
+
+    <!-- Real-time Stats Cards Grid -->
+    <div th:replace="~{admin/fragments/stats :: statsCards}"></div>
+
+    <div class="row g-4 mb-4">
+        <!-- Quick Trigger Actions Card -->
+        <div class="col-lg-4">
+            <div class="card-cw h-100 p-4">
+                <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-lightning-charge-fill text-warning"></i>
+                    Quick Automation Runs
+                </h5>
+                <p class="text-muted small">Immediately trigger business jobs on background worker nodes.</p>
+
+                <div class="d-grid gap-2 mt-3">
+                    <form th:action="@{/api/jobs/run}" method="post">
+                        <input type="hidden" name="jobClass" value="MpesaReconciliationJob">
+                        <input type="hidden" name="payload" value='{"paybillNumber": "654321", "accountReference": "KENYA-SETTLEMENT", "discrepancyThreshold": 5000.0, "notifyEmail": "settlements@clockwork.co.ke"}'>
+                        <button type="submit" class="btn btn-cw-outline w-100 text-start d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-wallet2 text-success me-2"></i> M-Pesa Reconciliation</span>
+                            <span class="badge bg-secondary">Run Now</span>
+                        </button>
+                    </form>
+
+                    <form th:action="@{/api/jobs/run}" method="post">
+                        <input type="hidden" name="jobClass" value="BulkSmsJob">
+                        <input type="hidden" name="payload" value='{"campaignName": "Customer Notice", "phoneNumbers": ["+254712345001","+254722345002","+254733345003"], "messageTemplate": "Jambo! Your monthly invoice is ready.", "batchSize": 100, "delayBetweenBatchesMs": 500}'>
+                        <button type="submit" class="btn btn-cw-outline w-100 text-start d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-chat-dots text-info me-2"></i> Bulk SMS Dispatch</span>
+                            <span class="badge bg-secondary">Run Now</span>
+                        </button>
+                    </form>
+
+                    <form th:action="@{/api/jobs/run}" method="post">
+                        <input type="hidden" name="jobClass" value="PdfReportJob">
+                        <input type="hidden" name="payload" value='{"reportType": "TAX_AUDIT", "organizationName": "Nairobi Corp Ltd", "recipientEmail": "audit@nairobi.co.ke", "targetS3Bucket": "clockwork-reports"}'>
+                        <button type="submit" class="btn btn-cw-outline w-100 text-start d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-file-earmark-pdf text-danger me-2"></i> PDF Jasper/OpenPDF Report</span>
+                            <span class="badge bg-secondary">Run Now</span>
+                        </button>
+                    </form>
+
+                    <form th:action="@{/api/jobs/run}" method="post">
+                        <input type="hidden" name="jobClass" value="DatabaseSnapshotJob">
+                        <input type="hidden" name="payload" value='{"databaseName": "clockwork_db", "retentionDays": 30, "targetS3Bucket": "clockwork-backups", "compression": "gzip"}'>
+                        <button type="submit" class="btn btn-cw-outline w-100 text-start d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-database-down text-warning me-2"></i> DB pg_dump Snapshot</span>
+                            <span class="badge bg-secondary">Run Now</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Architecture & Storage Status -->
+        <div class="col-lg-8">
+            <div class="card-cw h-100 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-check text-success"></i>
+                        Distributed Architecture Status
+                    </h5>
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
+                        Active Cluster
+                    </span>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="p-3 rounded bg-dark border border-secondary border-opacity-25">
+                            <div class="text-muted small mb-1">Job Engine</div>
+                            <div class="fw-bold">JobRunr 7.x</div>
+                            <div class="text-info small mt-1"><i class="bi bi-cpu"></i> 8 Workers | 15s Poll</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded bg-dark border border-secondary border-opacity-25">
+                            <div class="text-muted small mb-1">Relational &amp; Job Storage</div>
+                            <div class="fw-bold">PostgreSQL 15</div>
+                            <div class="text-success small mt-1"><i class="bi bi-database"></i> JSONB + Flyway V1</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded bg-dark border border-secondary border-opacity-25">
+                            <div class="text-muted small mb-1">Object Storage</div>
+                            <div class="fw-bold">MinIO S3 / Fallback</div>
+                            <div class="text-warning small mt-1"><i class="bi bi-cloud-arrow-up"></i> Reports &amp; Backups</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 p-3 rounded bg-dark bg-opacity-50 border border-secondary border-opacity-10">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="small fw-semibold text-light">Spring State Machine Workflow Engine</span>
+                        <span class="badge badge-active">Active</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mt-2 text-muted small">
+                        <span class="badge bg-secondary">CREATED</span>
+                        <i class="bi bi-arrow-right"></i>
+                        <span class="badge bg-info">GENERATING</span>
+                        <i class="bi bi-arrow-right"></i>
+                        <span class="badge bg-primary">EMAILING</span>
+                        <i class="bi bi-arrow-right"></i>
+                        <span class="badge bg-warning text-dark">ARCHIVING</span>
+                        <i class="bi bi-arrow-right"></i>
+                        <span class="badge bg-success">COMPLETED</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Executions Stream -->
+    <div class="card-cw p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">Recent Executions Activity</h5>
+            <a th:href="@{/admin/executions}" class="btn btn-sm btn-cw-outline">View All History</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table-cw">
+                <thead>
+                    <tr>
+                        <th>Execution ID</th>
+                        <th>JobRunr ID</th>
+                        <th>Status</th>
+                        <th>Attempt</th>
+                        <th>Duration</th>
+                        <th>Started At</th>
+                        <th>Summary / Result</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(recentExecutions)}">
+                        <td colspan="7" class="text-center text-muted py-4">
+                            No executions recorded yet. Trigger one from Quick Actions above!
+                        </td>
+                    </tr>
+                    <tr th:each="exec : ${recentExecutions}">
+                        <td>
+                            <code class="code-snippet" th:text="${#strings.substring(exec.id.toString(), 0, 8)} + '...'">id</code>
+                        </td>
+                        <td>
+                            <span class="text-muted small" th:text="${exec.jobRunrId != null ? #strings.substring(exec.jobRunrId, 0, 12) + '...' : 'N/A'}">runr-id</span>
+                        </td>
+                        <td>
+                            <span th:if="${exec.status.name() == 'SUCCEEDED'}" class="badge-status badge-succeeded">
+                                <i class="bi bi-check-circle-fill"></i> SUCCEEDED
+                            </span>
+                            <span th:if="${exec.status.name() == 'PROCESSING'}" class="badge-status badge-processing">
+                                <i class="bi bi-arrow-repeat spin"></i> PROCESSING
+                            </span>
+                            <span th:if="${exec.status.name() == 'SCHEDULED'}" class="badge-status badge-active">
+                                <i class="bi bi-clock"></i> SCHEDULED
+                            </span>
+                            <span th:if="${exec.status.name() == 'FAILED'}" class="badge-status badge-failed">
+                                <i class="bi bi-x-circle-fill"></i> FAILED
+                            </span>
+                            <span th:if="${exec.status.name() == 'DEAD_LETTER'}" class="badge-status badge-dead-letter">
+                                <i class="bi bi-radioactive"></i> DEAD_LETTER
+                            </span>
+                        </td>
+                        <td th:text="${exec.attempt}">1</td>
+                        <td>
+                            <span th:if="${exec.durationMs != null}" th:text="${exec.durationMs + ' ms'}">-</span>
+                            <span th:unless="${exec.durationMs != null}" class="text-muted">-</span>
+                        </td>
+                        <td class="text-muted small" th:text="${#temporals.format(exec.startedAt, 'yyyy-MM-dd HH:mm:ss')}">Time</td>
+                        <td>
+                            <span class="small text-truncate d-inline-block" style="max-width: 320px;"
+                                  th:text="${exec.resultSummary != null ? exec.resultSummary : (exec.errorMessage != null ? exec.errorMessage : 'Running...')}">
+                                Result
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{admin/layout :: footer}"></footer>
+</body>
+</html>

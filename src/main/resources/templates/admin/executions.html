@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head('Executions')}"></head>
+<body>
+
+<nav th:replace="~{admin/layout :: nav}"></nav>
+
+<div class="container-fluid px-4 py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Execution History</h2>
+            <p class="text-muted small mb-0">Detailed trace of every distributed job execution, duration, retry attempts, and exceptions.</p>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="card-cw p-3 mb-4">
+        <form th:action="@{/admin/executions}" method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small text-muted">Filter by Scheduled Job</label>
+                <select name="jobId" class="form-select form-select-sm">
+                    <option value="">All Scheduled Jobs</option>
+                    <option th:each="j : ${scheduledJobs}"
+                            th:value="${j.id}"
+                            th:text="${j.name}"
+                            th:selected="${selectedJobId != null and selectedJobId == j.id}">Job</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small text-muted">Status</label>
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">All Statuses</option>
+                    <option th:each="st : ${statuses}"
+                            th:value="${st.name()}"
+                            th:text="${st.name()}"
+                            th:selected="${selectedStatus != null and selectedStatus == st}">Status</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-sm btn-cw-primary w-100">
+                    <i class="bi bi-funnel me-1"></i> Apply Filter
+                </button>
+            </div>
+            <div class="col-md-2">
+                <a th:href="@{/admin/executions}" class="btn btn-sm btn-cw-outline w-100">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Executions Table -->
+    <div class="card-cw p-4">
+        <div class="table-responsive">
+            <table class="table-cw">
+                <thead>
+                    <tr>
+                        <th>Execution ID</th>
+                        <th>JobRunr ID</th>
+                        <th>Status</th>
+                        <th>Attempt</th>
+                        <th>Started At</th>
+                        <th>Finished At</th>
+                        <th>Duration</th>
+                        <th>Result Summary</th>
+                        <th class="text-end">Diagnostics</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${executions.empty}">
+                        <td colspan="9" class="text-center text-muted py-4">
+                            No matching executions found.
+                        </td>
+                    </tr>
+                    <tr th:each="exec : ${executions.content}">
+                        <td>
+                            <code class="code-snippet" th:text="${#strings.substring(exec.id.toString(), 0, 8)} + '...'">id</code>
+                        </td>
+                        <td>
+                            <span class="text-muted small" th:text="${exec.jobRunrId != null ? #strings.substring(exec.jobRunrId, 0, 10) + '...' : 'N/A'}">runr-id</span>
+                        </td>
+                        <td>
+                            <span th:if="${exec.status.name() == 'SUCCEEDED'}" class="badge-status badge-succeeded">
+                                <i class="bi bi-check-circle-fill"></i> SUCCEEDED
+                            </span>
+                            <span th:if="${exec.status.name() == 'PROCESSING'}" class="badge-status badge-processing">
+                                <i class="bi bi-arrow-repeat spin"></i> PROCESSING
+                            </span>
+                            <span th:if="${exec.status.name() == 'SCHEDULED'}" class="badge-status badge-active">
+                                <i class="bi bi-clock"></i> SCHEDULED
+                            </span>
+                            <span th:if="${exec.status.name() == 'FAILED'}" class="badge-status badge-failed">
+                                <i class="bi bi-x-circle-fill"></i> FAILED
+                            </span>
+                            <span th:if="${exec.status.name() == 'DEAD_LETTER'}" class="badge-status badge-dead-letter">
+                                <i class="bi bi-radioactive"></i> DEAD_LETTER
+                            </span>
+                        </td>
+                        <td th:text="${exec.attempt}">1</td>
+                        <td class="text-muted small" th:text="${exec.startedAt != null ? #temporals.format(exec.startedAt, 'yyyy-MM-dd HH:mm:ss') : '-'}">Start</td>
+                        <td class="text-muted small" th:text="${exec.finishedAt != null ? #temporals.format(exec.finishedAt, 'yyyy-MM-dd HH:mm:ss') : '-'}">Finish</td>
+                        <td>
+                            <span th:if="${exec.durationMs != null}" th:text="${exec.durationMs + ' ms'}">-</span>
+                            <span th:unless="${exec.durationMs != null}" class="text-muted">-</span>
+                        </td>
+                        <td>
+                            <span class="small text-truncate d-inline-block" style="max-width: 280px;"
+                                  th:text="${exec.resultSummary != null ? exec.resultSummary : (exec.errorMessage != null ? exec.errorMessage : 'Running...')}">
+                                Result
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <button th:if="${exec.errorMessage != null or exec.stackTrace != null}"
+                                    class="btn btn-sm btn-cw-danger"
+                                    data-bs-toggle="modal"
+                                    th:data-bs-target="'#errModal-' + ${exec.id}">
+                                <i class="bi bi-bug me-1"></i> Error
+                            </button>
+                            <span th:unless="${exec.errorMessage != null or exec.stackTrace != null}" class="text-muted small">-</span>
+                        </td>
+
+                        <!-- Error Diagnostic Modal -->
+                        <div th:if="${exec.errorMessage != null or exec.stackTrace != null}" class="modal fade" th:id="'errModal-' + ${exec.id}" tabindex="-1">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header border-secondary border-opacity-25">
+                                        <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Execution Failure Details</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label text-muted small">Error Message</label>
+                                            <div class="p-2 bg-dark rounded text-danger font-monospace small" th:text="${exec.errorMessage}">Message</div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label text-muted small">Stack Trace</label>
+                                            <pre class="p-3 bg-dark text-light rounded small" style="max-height: 300px; overflow-y: auto;" th:text="${exec.stackTrace}">Stack</pre>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer border-secondary border-opacity-25">
+                                        <button type="button" class="btn btn-cw-outline" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div th:if="${totalPages > 1}" class="d-flex justify-content-between align-items-center mt-4">
+            <span class="text-muted small">Page <span th:text="${currentPage + 1}">1</span> of <span th:text="${totalPages}">1</span></span>
+            <div class="d-flex gap-1">
+                <a th:if="${currentPage > 0}"
+                   th:href="@{/admin/executions(page=${currentPage - 1}, jobId=${selectedJobId}, status=${selectedStatus})}"
+                   class="btn btn-sm btn-cw-outline">Previous</a>
+                <a th:if="${currentPage + 1 < totalPages}"
+                   th:href="@{/admin/executions(page=${currentPage + 1}, jobId=${selectedJobId}, status=${selectedStatus})}"
+                   class="btn btn-sm btn-cw-outline">Next</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{admin/layout :: footer}"></footer>
+</body>
+</html>

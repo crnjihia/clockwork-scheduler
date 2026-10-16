@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="statsCards" class="row g-3 mb-4">
+    <div class="col-6 col-lg-2">
+        <div class="card-cw card-stat">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="stat-label">Total Executions</span>
+                <i class="bi bi-stack text-info"></i>
+            </div>
+            <div class="stat-value" id="stat-total" th:text="${stats.totalJobs}">0</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-2">
+        <div class="card-cw card-stat">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="stat-label">Processing</span>
+                <i class="bi bi-arrow-repeat text-primary"></i>
+            </div>
+            <div class="stat-value text-primary" id="stat-running" th:text="${stats.runningJobs}">0</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-2">
+        <div class="card-cw card-stat">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="stat-label">Succeeded</span>
+                <i class="bi bi-check-circle text-success"></i>
+            </div>
+            <div class="stat-value text-success" id="stat-succeeded" th:text="${stats.succeededJobs}">0</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-2">
+        <div class="card-cw card-stat">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="stat-label">Failed (Transient)</span>
+                <i class="bi bi-exclamation-circle text-warning"></i>
+            </div>
+            <div class="stat-value text-warning" id="stat-failed" th:text="${stats.failedJobs}">0</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-2">
+        <div class="card-cw card-stat">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="stat-label">Dead-Letter (DLQ)</span>
+                <i class="bi bi-radioactive text-danger"></i>
+            </div>
+            <div class="stat-value text-danger" id="stat-dlq" th:text="${stats.deadLetterJobs}">0</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-2">
+        <div class="card-cw card-stat">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="stat-label">Avg Duration</span>
+                <i class="bi bi-stopwatch text-secondary"></i>
+            </div>
+            <div class="stat-value" id="stat-avg-duration" th:text="${#numbers.formatDecimal(stats.averageDurationMs / 1000.0, 1, 2) + 's'}">0.00s</div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

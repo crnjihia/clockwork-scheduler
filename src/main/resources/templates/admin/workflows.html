@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head('Workflows')}"></head>
+<body>
+
+<nav th:replace="~{admin/layout :: nav}"></nav>
+
+<div class="container-fluid px-4 py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">State Machine Workflows</h2>
+            <p class="text-muted small mb-0">Multi-step statement pipeline orchestrated by Spring State Machine: <code>CREATED &rarr; GENERATING &rarr; EMAILING &rarr; ARCHIVING &rarr; COMPLETED</code></p>
+        </div>
+        <button class="btn btn-cw-primary" data-bs-toggle="modal" data-bs-target="#newWorkflowModal">
+            <i class="bi bi-plus-lg me-1"></i> New Workflow Instance
+        </button>
+    </div>
+
+    <!-- Workflows List -->
+    <div th:if="${#lists.isEmpty(workflows)}" class="card-cw p-5 text-center text-muted">
+        <i class="bi bi-diagram-3 fs-1 text-secondary mb-3"></i>
+        <h5>No Workflows Created Yet</h5>
+        <p class="small">Create an automated multi-step statement workflow using the button above.</p>
+    </div>
+
+    <div class="row g-4" th:each="wf : ${workflows}">
+        <div class="col-12">
+            <div class="card-cw p-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-3 border-bottom border-secondary border-opacity-25 gap-2">
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <h5 class="fw-bold mb-0" th:text="${wf.name}">Monthly Customer Statement Run</h5>
+                            <span th:if="${wf.status.name() == 'COMPLETED'}" class="badge-status badge-succeeded">
+                                <i class="bi bi-check-circle-fill"></i> COMPLETED
+                            </span>
+                            <span th:if="${wf.status.name() == 'RUNNING'}" class="badge-status badge-processing">
+                                <i class="bi bi-arrow-repeat spin"></i> RUNNING
+                            </span>
+                            <span th:if="${wf.status.name() == 'FAILED'}" class="badge-status badge-failed">
+                                <i class="bi bi-x-circle-fill"></i> FAILED
+                            </span>
+                            <span th:if="${wf.status.name() == 'PENDING'}" class="badge-status badge-active">
+                                <i class="bi bi-clock"></i> PENDING
+                            </span>
+                        </div>
+                        <div class="text-muted small mt-1">
+                            <span>ID: <code class="code-snippet" th:text="${wf.id}">uuid</code></span>
+                            <span class="ms-3">State: <strong class="text-info" th:text="${wf.currentState}">CREATED</strong></span>
+                            <span class="ms-3">Created: <span th:text="${#temporals.format(wf.createdAt, 'yyyy-MM-dd HH:mm:ss')}">Time</span></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <!-- Start Form -->
+                        <form th:if="${wf.status.name() == 'PENDING'}" th:action="@{'/admin/workflows/' + ${wf.id} + '/start'}" method="post">
+                            <button type="submit" class="btn btn-sm btn-cw-primary">
+                                <i class="bi bi-play-fill"></i> Execute Workflow
+                            </button>
+                        </form>
+
+                        <!-- Retry Form -->
+                        <form th:if="${wf.status.name() == 'FAILED'}" th:action="@{'/admin/workflows/' + ${wf.id} + '/retry'}" method="post">
+                            <button type="submit" class="btn btn-sm btn-warning text-dark fw-bold">
+                                <i class="bi bi-arrow-clockwise"></i> Retry from Failure
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Steps Timeline -->
+                <h6 class="text-muted text-uppercase small fw-bold mb-3">Workflow Execution Steps</h6>
+                <div class="table-responsive">
+                    <table class="table-cw table-sm">
+                        <thead>
+                            <tr>
+                                <th>Order</th>
+                                <th>Step Name</th>
+                                <th>Handler Class</th>
+                                <th>Target On Success</th>
+                                <th>Target On Failure</th>
+                                <th>Status</th>
+                                <th>Result / Detail</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="step : ${stepsByWorkflow.get(wf.id)}">
+                                <td><span class="badge bg-secondary" th:text="${step.stepOrder}">1</span></td>
+                                <td><strong th:text="${step.name}">Step</strong></td>
+                                <td><code class="code-snippet" th:text="${step.handler}">Handler</code></td>
+                                <td><span class="text-success small" th:text="${step.onSuccessState}">NEXT</span></td>
+                                <td><span class="text-danger small" th:text="${step.onFailureState}">FAILED</span></td>
+                                <td>
+                                    <span th:if="${step.status.name() == 'COMPLETED'}" class="badge-status badge-succeeded">
+                                        <i class="bi bi-check-circle-fill"></i> COMPLETED
+                                    </span>
+                                    <span th:if="${step.status.name() == 'RUNNING'}" class="badge-status badge-processing">
+                                        <i class="bi bi-arrow-repeat spin"></i> RUNNING
+                                    </span>
+                                    <span th:if="${step.status.name() == 'FAILED'}" class="badge-status badge-failed">
+                                        <i class="bi bi-x-circle-fill"></i> FAILED
+                                    </span>
+                                    <span th:if="${step.status.name() == 'PENDING'}" class="badge-status badge-active">
+                                        <i class="bi bi-clock"></i> PENDING
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="small" th:text="${step.stepResult != null ? step.stepResult : (step.errorMessage != null ? step.errorMessage : '-')}">-</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New Workflow Modal -->
+<div class="modal fade" id="newWorkflowModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form th:action="@{/admin/workflows/create}" method="post">
+                <div class="modal-header border-secondary border-opacity-25">
+                    <h5 class="modal-title">Initialize Statement Workflow</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">Workflow Name</label>
+                        <input type="text" name="name" class="form-control" value="Nairobi Corporate Statement Run" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">Customer Account ID</label>
+                        <input type="text" name="customerId" class="form-control" value="CUST-KENYA-4921" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">Customer Email</label>
+                        <input type="email" name="email" class="form-control" value="billing@client.co.ke" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">Customer Phone (SMS Notice)</label>
+                        <input type="text" name="phone" class="form-control" value="+254712345678" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary border-opacity-25">
+                    <button type="button" class="btn btn-cw-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-cw-primary">Create Workflow</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{admin/layout :: footer}"></footer>
+</body>
+</html>
