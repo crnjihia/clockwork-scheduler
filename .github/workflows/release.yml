@@ -1,0 +1,51 @@
+name: Release Clockwork Scheduler
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Grant Execute Permission for Maven Wrapper
+        run: chmod +x mvnw
+
+      - name: Build and Package Release Artifacts
+        run: ./mvnw clean package -DskipTests
+
+      - name: Prepare Release Assets
+        run: |
+          mkdir -p release-assets
+          cp target/clockwork-scheduler-*.jar release-assets/
+          cp docker-compose.yml release-assets/
+          cp docs/postman/Clockwork_Scheduler.postman_collection.json release-assets/
+          cp docker/grafana/dashboards/clockwork-scheduler.json release-assets/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Clockwork Scheduler ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            release-assets/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
