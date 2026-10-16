@@ -16,10 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -32,37 +28,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class JobSchedulingIntegrationTest {
 
     private static final Logger log = LoggerFactory.getLogger(JobSchedulingIntegrationTest.class);
-
-    private static PostgreSQLContainer<?> postgres;
-    private static boolean dockerAvailable = false;
-
-    static {
-        try {
-            if (DockerClientFactory.instance().isDockerAvailable()) {
-                postgres = new PostgreSQLContainer<>("postgres:15-alpine")
-                        .withDatabaseName("clockwork_test")
-                        .withUsername("test")
-                        .withPassword("test");
-                postgres.start();
-                dockerAvailable = true;
-                log.info("Testcontainers PostgreSQL started successfully at {}", postgres.getJdbcUrl());
-            } else {
-                log.warn("Docker environment not available for Testcontainers; using in-memory PostgreSQL test profile.");
-            }
-        } catch (Throwable t) {
-            log.warn("Testcontainers PostgreSQL could not start: {}. Falling back to in-memory PostgreSQL mode.", t.getMessage());
-            dockerAvailable = false;
-        }
-    }
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        if (dockerAvailable && postgres != null && postgres.isRunning()) {
-            registry.add("spring.datasource.url", postgres::getJdbcUrl);
-            registry.add("spring.datasource.username", postgres::getUsername);
-            registry.add("spring.datasource.password", postgres::getPassword);
-        }
-    }
 
     @Autowired
     private JobSchedulingService jobSchedulingService;
